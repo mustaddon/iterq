@@ -1,0 +1,13 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "chrome",
+      "request": "launch",
+      "name": "localhost (Chrome)",
+      "url": "http://localhost:3000/src/index.html",
+      "webRoot": "${workspaceFolder}",
+      "preLaunchTask": "npm: build",
+    },
+  ]
+}

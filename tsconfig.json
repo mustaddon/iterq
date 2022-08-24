@@ -1,0 +1,10 @@
+{
+    "compilerOptions": {
+      "target": "ES2015",
+      "outDir": "./dist",
+      "sourceMap": true,
+      "declaration": true,
+      "strictNullChecks": true,
+      "removeComments": true,
+    }
+  }
