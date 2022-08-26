@@ -109,6 +109,10 @@ export class IterQuery<T> implements Iterable<T> {
     }
 
     public count(): number {
+        const length = (this._iterable as any).length;
+        if (Number.isInteger(length))
+            return length;
+
         let result = 0;
         for (let x of this._iterable) result++;
         return result;

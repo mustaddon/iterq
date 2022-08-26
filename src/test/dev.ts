@@ -1,9 +1,8 @@
-import './iterq-extensions'
-import { IterQuery } from './iterq'
+import { IterQuery } from '../iterq'
 
 let a : number[] = [11,22,33,33];
 let b : readonly number[] = [44,55,66,66];
-let query = a.query(); // new IterQuery(a);
+let query = a.iterq(); // new IterQuery(a);
 
 console.log(new IterQuery("test").reverse().toArray());
 console.log('iterable', [...query]);

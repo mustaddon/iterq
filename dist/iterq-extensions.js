@@ -1,5 +1,5 @@
 import { IterQuery } from './iterq.js';
-const iterExpTag = 'query';
+const iterExpTag = 'iterq';
 const iterExpFn = function () { return new IterQuery(this); };
 for (let x of [Array, Set, Map])
     if (!x.prototype[iterExpTag])

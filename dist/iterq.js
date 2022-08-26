@@ -98,6 +98,9 @@ export class IterQuery {
         return initialValue;
     }
     count() {
+        const length = this._iterable.length;
+        if (Number.isInteger(length))
+            return length;
         let result = 0;
         for (let x of this._iterable)
             result++;

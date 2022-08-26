@@ -1,16 +1,12 @@
 {
-  "version": "0.0.2",
+  "version": "0.0.3",
   "name": "iterq",
 	"description": "Optimization for iterable queries (filter, map, ...)",
   "keywords": [ "array", "iterable", "filter", "map", "grouping" ],
   "author": "Leonid Salavatov <mustaddon@gmail.com>",
   "license": "MIT",
   "main": "./dist/iterq.js",
-  "files": [
-    "dist/*",
-    "!dist/_*",
-    "README.md"
-  ],
+  "files": [ "dist/*", "!dist/test*", "README.md", "LICENSE" ],
   "scripts": {
     "build": "tsc-esm",
     "dev": "lite-server"

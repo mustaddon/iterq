@@ -1,5 +1,5 @@
 import { IterQuery } from './iterq';
-declare const iterExpTag = "query";
+declare const iterExpTag = "iterq";
 declare global {
     interface Array<T> {
         [iterExpTag](): IterQuery<T>;
