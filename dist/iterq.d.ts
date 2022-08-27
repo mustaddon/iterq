@@ -18,4 +18,5 @@ export declare class IterQuery<T> implements Iterable<T> {
     toSet(): Set<T>;
     toMap<K, V>(keyFn: (value: T, index: number) => K, valFn: (value: T, index: number) => V): Map<K, V>;
     forEach(fn: (value: T, index: number) => void): void;
+    private _isArray;
 }

@@ -1,5 +1,7 @@
+const arrayConstructors = new Set([String, Array, Int8Array, Uint8Array, Uint8ClampedArray, Int16Array, Uint16Array, Int32Array, Uint32Array, Float32Array, Float64Array, BigInt64Array, BigUint64Array]);
+
 export class IterQuery<T> implements Iterable<T> {
-    constructor(iterable: Iterable<T>) { 
+    constructor(iterable: Iterable<T>) {
         this._iterable = iterable;
     }
 
@@ -14,7 +16,7 @@ export class IterQuery<T> implements Iterable<T> {
         return new IterQuery<TNew>({
             [Symbol.iterator]: function* () {
                 let i = 0;
-                for (let x of self._iterable) 
+                for (let x of self._iterable)
                     yield fn(x, i++);
             },
         });
@@ -26,7 +28,7 @@ export class IterQuery<T> implements Iterable<T> {
             [Symbol.iterator]: function* () {
                 let i = 0;
                 for (let x of self._iterable)
-                    if (predicate(x, i++)) 
+                    if (predicate(x, i++))
                         yield x;
             },
         });
@@ -44,7 +46,7 @@ export class IterQuery<T> implements Iterable<T> {
                     if (!vals) map.set(key, [x]);
                     else vals.push(x);
                 }
-                yield *map;
+                yield* map;
             },
         });
     }
@@ -53,9 +55,9 @@ export class IterQuery<T> implements Iterable<T> {
         const self = this;
         return new IterQuery<T>({
             [Symbol.iterator]: function* () {
-                yield *self._iterable;
-                for (let x of iterables) 
-                    yield *x;
+                yield* self._iterable;
+                for (let x of iterables)
+                    yield* x;
             },
         });
     }
@@ -66,9 +68,9 @@ export class IterQuery<T> implements Iterable<T> {
             [Symbol.iterator]: function* () {
                 const iter = self._iterable[Symbol.iterator]();
                 let cur = iter.next(), i = 0;
-                while(!cur.done && i++ < count)
+                while (!cur.done && i++ < count)
                     cur = iter.next();
-                while(!cur.done) {
+                while (!cur.done) {
                     yield cur.value;
                     cur = iter.next();
                 }
@@ -89,38 +91,43 @@ export class IterQuery<T> implements Iterable<T> {
     }
 
     public sort(compareFn?: (a: T, b: T) => number): IterQuery<T> {
-        const self = this;
         return new IterQuery<T>({
-            [Symbol.iterator]: () => [...self._iterable].sort(compareFn)[Symbol.iterator](),
+            [Symbol.iterator]: () => [...this._iterable].sort(compareFn)[Symbol.iterator](),
         });
     }
 
     public reverse(): IterQuery<T> {
         const self = this;
         return new IterQuery<T>({
-            [Symbol.iterator]: () => [...self._iterable].reverse()[Symbol.iterator](),
+            [Symbol.iterator]: function* () {
+                if (self._isArray()) {
+                    const arr = self._iterable as T[];
+                    for (let i = arr.length - 1; i >= 0; i--)
+                        yield arr[i];
+                }
+                else yield* [...self._iterable].reverse();
+            },
         });
     }
 
     public find(predicate: (value: T, index: number) => unknown): T | undefined {
         let i = 0;
         for (let x of this._iterable)
-            if (predicate(x, i++)) 
+            if (predicate(x, i++))
                 return x;
         return undefined;
     }
 
     public reduce<TResult>(fn: (accumulator: TResult, value: T, index: number) => TResult, initialValue: TResult): TResult {
         let i = 0;
-        for (let x of this._iterable) 
+        for (let x of this._iterable)
             initialValue = fn(initialValue, x, i++);
         return initialValue;
     }
 
     public count(): number {
-        const length = (this._iterable as any).length;
-        if (Number.isInteger(length))
-            return length;
+        if (this._isArray())
+            return (this._iterable as T[]).length;
 
         let result = 0;
         for (let x of this._iterable) result++;
@@ -139,11 +146,15 @@ export class IterQuery<T> implements Iterable<T> {
         return new Set(this._iterable);
     }
 
-    public toMap<K,V>(keyFn: (value: T, index: number) => K, valFn: (value: T, index: number) => V): Map<K,V> {
-        return new Map(this.map<readonly [K, V]>((x,i) => [keyFn(x, i), valFn(x, i)]));
+    public toMap<K, V>(keyFn: (value: T, index: number) => K, valFn: (value: T, index: number) => V): Map<K, V> {
+        return new Map(this.map<readonly [K, V]>((x, i) => [keyFn(x, i), valFn(x, i)]));
     }
-    
+
     public forEach(fn: (value: T, index: number) => void) {
         let i = 0; for (let x of this._iterable) fn(x, i++);
+    }
+
+    private _isArray() {
+        return arrayConstructors.has((this._iterable as any).constructor);
     }
 }

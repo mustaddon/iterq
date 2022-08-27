@@ -1,3 +1,4 @@
+const arrayConstructors = new Set([String, Array, Int8Array, Uint8Array, Uint8ClampedArray, Int16Array, Uint16Array, Int32Array, Uint32Array, Float32Array, Float64Array, BigInt64Array, BigUint64Array]);
 export class IterQuery {
     constructor(iterable) {
         this._iterable = iterable;
@@ -83,15 +84,22 @@ export class IterQuery {
         });
     }
     sort(compareFn) {
-        const self = this;
         return new IterQuery({
-            [Symbol.iterator]: () => [...self._iterable].sort(compareFn)[Symbol.iterator](),
+            [Symbol.iterator]: () => [...this._iterable].sort(compareFn)[Symbol.iterator](),
         });
     }
     reverse() {
         const self = this;
         return new IterQuery({
-            [Symbol.iterator]: () => [...self._iterable].reverse()[Symbol.iterator](),
+            [Symbol.iterator]: function* () {
+                if (self._isArray()) {
+                    const arr = self._iterable;
+                    for (let i = arr.length - 1; i >= 0; i--)
+                        yield arr[i];
+                }
+                else
+                    yield* [...self._iterable].reverse();
+            },
         });
     }
     find(predicate) {
@@ -108,9 +116,8 @@ export class IterQuery {
         return initialValue;
     }
     count() {
-        const length = this._iterable.length;
-        if (Number.isInteger(length))
-            return length;
+        if (this._isArray())
+            return this._iterable.length;
         let result = 0;
         for (let x of this._iterable)
             result++;
@@ -132,6 +139,9 @@ export class IterQuery {
         let i = 0;
         for (let x of this._iterable)
             fn(x, i++);
+    }
+    _isArray() {
+        return arrayConstructors.has(this._iterable.constructor);
     }
 }
 //# sourceMappingURL=iterq.js.map
