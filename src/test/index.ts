@@ -1,3 +1,3 @@
 import '../iterq-extensions'
-//import './dev'
-import './perf'
+import './dev'
+//import './perf'

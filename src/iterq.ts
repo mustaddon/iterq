@@ -1,8 +1,3 @@
-export interface Grouping<K, V> {
-    readonly key: K;
-    readonly values: V[];
-}
-
 export class IterQuery<T> implements Iterable<T> {
     constructor(iterable: Iterable<T>) { 
         this._iterable = iterable;
@@ -19,7 +14,8 @@ export class IterQuery<T> implements Iterable<T> {
         return new IterQuery<TNew>({
             [Symbol.iterator]: function* () {
                 let i = 0;
-                for (let x of self._iterable) yield fn(x, i++);
+                for (let x of self._iterable) 
+                    yield fn(x, i++);
             },
         });
     }
@@ -30,26 +26,25 @@ export class IterQuery<T> implements Iterable<T> {
             [Symbol.iterator]: function* () {
                 let i = 0;
                 for (let x of self._iterable)
-                    if (predicate(x, i++)) yield x;
+                    if (predicate(x, i++)) 
+                        yield x;
             },
         });
     }
 
-    public group<K>(keyFn: (value: T, index: number) => K): IterQuery<Grouping<K, T>> {
+    public group<K>(keyFn: (value: T, index: number) => K): IterQuery<readonly [K, T[]]> {
         const self = this;
-        return new IterQuery<Grouping<K, T>>({
+        return new IterQuery<readonly [K, T[]]>({
             [Symbol.iterator]: function* () {
                 const map = new Map<K, T[]>();
-                let i = 0;
-
+                let i = 0, key: K, vals: T[] | undefined;
                 for (let x of self._iterable) {
-                    let key = keyFn(x, i++);
-                    let val = map.get(key);
-                    if (!val) map.set(key, (val = []));
-                    val.push(x);
+                    key = keyFn(x, i++);
+                    vals = map.get(key);
+                    if (!vals) map.set(key, [x]);
+                    else vals.push(x);
                 }
-
-                for (let x of map) yield { key: x[0], values: x[1] };
+                yield *map;
             },
         });
     }
@@ -58,15 +53,27 @@ export class IterQuery<T> implements Iterable<T> {
         const self = this;
         return new IterQuery<T>({
             [Symbol.iterator]: function* () {
-                for (let x of self._iterable) yield x;
+                yield *self._iterable;
                 for (let x of iterables) 
-                    for (let xx of x) yield xx;
+                    yield *x;
             },
         });
     }
 
     public skip(count: number): IterQuery<T> {
-        return this.filter((x, i) => i >= count);
+        const self = this;
+        return new IterQuery<T>({
+            [Symbol.iterator]: function* () {
+                const iter = self._iterable[Symbol.iterator]();
+                let cur = iter.next(), i = 0;
+                while(!cur.done && i++ < count)
+                    cur = iter.next();
+                while(!cur.done) {
+                    yield cur.value;
+                    cur = iter.next();
+                }
+            },
+        });
     }
 
     public take(count: number): IterQuery<T> {
@@ -98,13 +105,15 @@ export class IterQuery<T> implements Iterable<T> {
     public find(predicate: (value: T, index: number) => unknown): T | undefined {
         let i = 0;
         for (let x of this._iterable)
-            if (predicate(x, i++)) return x;
+            if (predicate(x, i++)) 
+                return x;
         return undefined;
     }
 
     public reduce<TResult>(fn: (accumulator: TResult, value: T, index: number) => TResult, initialValue: TResult): TResult {
         let i = 0;
-        for (let x of this._iterable) initialValue = fn(initialValue, x, i++);
+        for (let x of this._iterable) 
+            initialValue = fn(initialValue, x, i++);
         return initialValue;
     }
 
@@ -135,7 +144,6 @@ export class IterQuery<T> implements Iterable<T> {
     }
     
     public forEach(fn: (value: T, index: number) => void) {
-        let i = 0;
-        for (let x of this._iterable) fn(x, i++);
+        let i = 0; for (let x of this._iterable) fn(x, i++);
     }
 }

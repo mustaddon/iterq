@@ -1,14 +1,10 @@
-export interface Grouping<K, V> {
-    readonly key: K;
-    readonly values: V[];
-}
 export declare class IterQuery<T> implements Iterable<T> {
     constructor(iterable: Iterable<T>);
     private readonly _iterable;
     [Symbol.iterator](): Iterator<T>;
     map<TNew>(fn: (value: T, index: number) => TNew): IterQuery<TNew>;
     filter(predicate: (value: T, index: number) => unknown): IterQuery<T>;
-    group<K>(keyFn: (value: T, index: number) => K): IterQuery<Grouping<K, T>>;
+    group<K>(keyFn: (value: T, index: number) => K): IterQuery<readonly [K, T[]]>;
     concat(...iterables: Iterable<T>[]): IterQuery<T>;
     skip(count: number): IterQuery<T>;
     take(count: number): IterQuery<T>;

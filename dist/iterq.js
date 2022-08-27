@@ -31,16 +31,16 @@ export class IterQuery {
         return new IterQuery({
             [Symbol.iterator]: function* () {
                 const map = new Map();
-                let i = 0;
+                let i = 0, key, vals;
                 for (let x of self._iterable) {
-                    let key = keyFn(x, i++);
-                    let val = map.get(key);
-                    if (!val)
-                        map.set(key, (val = []));
-                    val.push(x);
+                    key = keyFn(x, i++);
+                    vals = map.get(key);
+                    if (!vals)
+                        map.set(key, [x]);
+                    else
+                        vals.push(x);
                 }
-                for (let x of map)
-                    yield { key: x[0], values: x[1] };
+                yield* map;
             },
         });
     }
@@ -48,16 +48,26 @@ export class IterQuery {
         const self = this;
         return new IterQuery({
             [Symbol.iterator]: function* () {
-                for (let x of self._iterable)
-                    yield x;
+                yield* self._iterable;
                 for (let x of iterables)
-                    for (let xx of x)
-                        yield xx;
+                    yield* x;
             },
         });
     }
     skip(count) {
-        return this.filter((x, i) => i >= count);
+        const self = this;
+        return new IterQuery({
+            [Symbol.iterator]: function* () {
+                const iter = self._iterable[Symbol.iterator]();
+                let cur = iter.next(), i = 0;
+                while (!cur.done && i++ < count)
+                    cur = iter.next();
+                while (!cur.done) {
+                    yield cur.value;
+                    cur = iter.next();
+                }
+            },
+        });
     }
     take(count) {
         const self = this;

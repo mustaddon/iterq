@@ -1,7 +1,7 @@
 {
-  "version": "0.0.3",
+  "version": "0.1.0",
   "name": "iterq",
-	"description": "Optimization for iterable queries (filter, map, ...)",
+	"description": "Memory usage optimization in cascading iterable queries",
   "keywords": [ "array", "iterable", "filter", "map", "grouping" ],
   "author": "Leonid Salavatov <mustaddon@gmail.com>",
   "license": "MIT",
